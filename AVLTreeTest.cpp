@@ -15,8 +15,17 @@ class AVLTreeFixture : public ::testing::Test
 protected:
 	AVL_Tree<int, int> avlTree = AVL_Tree<int, int>();
 	
-	std::vector<Pair<int, int>> vec = {{0, 5}, {1, 70}, {2, 70}, {4, 70}, {5, 70}, {6, 70}, {7, 70}, {8, 70}, {10, 50},
-									   {11, 30}, {30, 13}};
+	std::vector<Pair<int, int>> vec = {{0,  5},
+									   {1,  70},
+									   {2,  70},
+									   {4,  70},
+									   {5,  70},
+									   {6,  70},
+									   {7,  70},
+									   {8,  70},
+									   {10, 50},
+									   {11, 30},
+									   {30, 13}};
 	
 	std::string str;
 	
@@ -147,11 +156,11 @@ TEST_F(AVLTreeFixture, MinMax)
 {
 	// Get the minimum element
 	EXPECT_EQ(avlTree.get_min().status(), SUCCESS);
-	EXPECT_EQ(avlTree.get_min().ans(), 5);
+	EXPECT_EQ(avlTree.get_min().ans(), vec[0].get_second());
 	
 	// Get the maximum element
 	EXPECT_EQ(avlTree.get_max().status(), SUCCESS);
-	EXPECT_EQ(avlTree.get_max().ans(), 13);
+	EXPECT_EQ(avlTree.get_max().ans(), vec[vec.size() - 1].get_second());
 }
 
 TEST_F(AVLTreeFixture, MinMaxEmptyTree)
@@ -190,7 +199,7 @@ TEST_F(AVLTreeFixture, GetRank)
 {
 	for (int i = 0; i < vec.size(); ++i)
 	{
-		EXPECT_EQ(avlTree.get_rank(vec[i].get_first()), i+1);
+		EXPECT_EQ(avlTree.get_rank(vec[i].get_first()), i + 1);
 	}
 }
 
@@ -208,7 +217,7 @@ TEST(SUITE, GetRankEmptyTree)
 
 TEST_F(AVLTreeFixture, Remove)
 {
-	for(auto pair : vec)
+	for (auto pair : vec)
 	{
 		EXPECT_EQ(avlTree.remove(pair.get_first()), SUCCESS);
 		ASSERT_TRUE(avlTree.is_valid());
@@ -219,5 +228,46 @@ TEST_F(AVLTreeFixture, Remove)
 	ASSERT_EQ(avlTree.get_size(), 0);
 	ASSERT_TRUE(avlTree.is_valid());
 }
+TEST_F(AVLTreeFixture, ConstructFromSortedArray)
+{
+	int* values = new int[vec.size()];
+	int* keys = new int[vec.size()];
+	for (int i = 0; i < vec.size(); ++i)
+	{
+		keys[i] = vec[i].get_first();
+		values[i] = vec[i].get_second();
+	}
+	
+	auto tree = AVL_Tree<int, int>(values, keys, vec.size());
+	ASSERT_TRUE(tree.is_valid());
+	EXPECT_EQ(tree.to_vec(), vec);
+	std::stringstream ss;
+	tree.inorder(ss);
+	EXPECT_EQ(ss.str(), str);
+	EXPECT_EQ(tree.get_size(), vec.size());
+	EXPECT_EQ(tree.get_min().status(), SUCCESS);
+	EXPECT_EQ(tree.get_min().ans(), vec[0].get_second());
+	EXPECT_EQ(tree.get_max().status(), SUCCESS);
+	EXPECT_EQ(tree.get_max().ans(), vec[vec.size() - 1].get_second());
+	for (auto pair : vec)
+	{
+		auto res = tree.find(pair.get_first());
+		EXPECT_EQ(res.status(), SUCCESS);
+		EXPECT_EQ(res.ans(), pair.get_second());
+	}
+}
+
+TEST(SUITE, ConstructFromEmptyArray)
+{
+	auto tree = AVL_Tree<int, int>(nullptr, nullptr, 0);
+	ASSERT_TRUE(tree.is_valid());
+	EXPECT_EQ(tree.get_size(), 0);
+	std::vector<Pair<int, int>> v = std::vector<Pair<int, int>>();
+	EXPECT_EQ(tree.to_vec(), v);
+	std::stringstream ss;
+	tree.inorder(ss);
+	EXPECT_EQ(ss.str(), "");
+}
+
 
 
