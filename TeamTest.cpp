@@ -38,6 +38,51 @@ protected:
 												  {5,  70},
 												  {11, 30}};
 	
+	std::vector<Pair<int, int>> vec = {{0,  5},
+									   {4,  70},
+									   {1,  70},
+									   {7,  70},
+									   {6,  70},
+									   {10, 50},
+									   {8,  70},
+									   {30, 13},
+									   {2,  70},
+									   {5,  70},
+									   {11, 30}};
+	
+	std::vector<Pair<int, int>> vec2 = {{1,   2},
+										{4,   5},
+										{6,   3},
+										{10,  10},
+										{16,  11},
+										{20,  15},
+										{100, 7},
+										{101, 6},
+										{102, 4}};
+	
+	std::vector<Pair<int, int>> vec3 = {{1,   2},
+											 {4,   5},
+											 {6,   3},
+											 {10,  10},
+											 {16,  11},
+											 {20,  15},
+											 {100, 7},
+											 {101, 6},
+											 {102, 4}};
+	
+	std::vector<Pair<int, int>> vec4 = {{1,   800},
+											 {2,   700},
+											 {3,   600},
+											 {4,   500},
+											 {10,  80},
+											 {20,  70},
+											 {30,  60},
+											 {40,  50},
+											 {100, 8},
+											 {200, 7},
+											 {300, 6},
+											 {400, 5}};
+	
 	Team team = Team(id, sport, nullptr);
 };
 
@@ -122,6 +167,51 @@ TEST_F(EmptyTeamFixture, AddContestant)
 	}
 }
 
+TEST_F(EmptyTeamFixture, TeamStengthMeasure)
+{
+	int i = 0;
+	for (const auto& pair : vec3)
+	{
+		i++;
+		if(i==9)
+		{
+			i = 0;
+		}
+		EXPECT_EQ(team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
+	}
+	output_t<int> output = team.get_team_strength();
+	EXPECT_EQ(output.status(), SUCCESS);
+	EXPECT_EQ(27, output.ans());
+	for (const auto& pair : vec3)
+	{
+		EXPECT_EQ(team.remove_contestant(pair.get_first()), SUCCESS);
+	}
+	for (const auto& pair : vec4)
+	{
+		i++;
+		if(i==12)
+		{
+			i=0;
+		}
+		EXPECT_EQ(team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
+	}
+	output_t<int> output2 = team.get_team_strength();
+	EXPECT_EQ(output2.status(), SUCCESS);
+	EXPECT_EQ(888, output2.ans());
+}
+
+TEST_F(EmptyTeamFixture, AuterityMeasure)
+{
+	for (const auto& pair : vec2)
+	{
+		auto allContestantsBefore = team.all_contestants_to_vec();
+		EXPECT_EQ(team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
+	}
+	output_t<int> output = team.austerity_measures();
+	EXPECT_EQ(output.status(), SUCCESS);
+	EXPECT_EQ(32, output.ans());
+}
+
 TEST_F(TeamWithContestantsFixture, AddContestat_Exists)
 {
 	for (const auto& pair : contestantData)
@@ -155,7 +245,8 @@ TEST_F(TeamWithContestantsFixture, RemoveContestant)
 		}
 		allContestantsBefore.erase(
 				std::remove_if(allContestantsBefore.begin(), allContestantsBefore.end(), [pair](Contestant contestant) {
-					return contestant.id == pair.get_first();}), allContestantsBefore.end());
+					return contestant.id == pair.get_first();
+				}), allContestantsBefore.end());
 		for (auto contestant : allContestantsBefore)
 		{
 			int counter = 0;
@@ -181,8 +272,8 @@ TEST_F(EmptyTeamFixture, RemoveContestant_NonExistent_EmptyTeam)
 
 TEST_F(TeamWithContestantsFixture, RemoveContestant_NonExistent)
 {
-	int maxId = (*std::max_element(contestantData.begin(), contestantData.end(), [](Pair<int, int> pair1, Pair<int,
-	        int> pair2){return pair1.get_first() < pair2.get_first();})).get_first();
+	int maxId = (*std::max_element(contestantData.begin(), contestantData.end(), [](Pair<int, int> pair1,
+																					Pair<int, int> pair2) { return pair1.get_first() < pair2.get_first(); })).get_first();
 	EXPECT_EQ(team.remove_contestant(maxId + 1), FAILURE);
 }
 
