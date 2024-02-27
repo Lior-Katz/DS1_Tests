@@ -99,7 +99,6 @@ TEST_F(EmptyTeamFixture, AddContestant)
 		for (const auto& group : team.contestantTrees)
 		{
 			
-			dsdi
 			ASSERT_TRUE(group.is_valid());
 			ASSERT_LE(group.get_size(), groupSize + 1);
 			ASSERT_GE(group.get_size(), groupSize);
@@ -128,4 +127,5 @@ TEST_F(EmptyTeamFixture, AddContestant)
 		}
 	}
 }
+
 
