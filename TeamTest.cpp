@@ -11,6 +11,8 @@
 #define FAILURE StatusType::FAILURE
 #define SUITE TeamTest
 
+std::vector<std::vector<Pair<int, int>>> divideContestants(const std::vector<Contestant>& contestants);
+
 class EmptyTeamFixture : public ::testing::Test
 {
 protected:
@@ -25,7 +27,9 @@ protected:
 //	AVL_Tree<Pair<int, int>, Contestant*> contestantsByStrength[SUB_GROUPS] = {AVL_Tree<Pair<int, int>, Contestant*>(),
 //																			   AVL_Tree<Pair<int, int>, Contestant*>(),
 //																			   AVL_Tree<Pair<int, int>, Contestant*>()};
-	
+	/**
+	 * vector of (id, strength)
+	 */
 	std::vector<Pair<int, int>> contestantData = {{3,  5},
 												  {4,  70},
 												  {1,  70},
@@ -61,27 +65,27 @@ protected:
 										{102, 4}};
 	
 	std::vector<Pair<int, int>> vec3 = {{1,   2},
-											 {4,   5},
-											 {6,   3},
-											 {10,  10},
-											 {16,  11},
-											 {20,  15},
-											 {100, 7},
-											 {101, 6},
-											 {102, 4}};
+										{4,   5},
+										{6,   3},
+										{10,  10},
+										{16,  11},
+										{20,  15},
+										{100, 7},
+										{101, 6},
+										{102, 4}};
 	
 	std::vector<Pair<int, int>> vec4 = {{1,   800},
-											 {2,   700},
-											 {3,   600},
-											 {4,   500},
-											 {10,  80},
-											 {20,  70},
-											 {30,  60},
-											 {40,  50},
-											 {100, 8},
-											 {200, 7},
-											 {300, 6},
-											 {400, 5}};
+										{2,   700},
+										{3,   600},
+										{4,   500},
+										{10,  80},
+										{20,  70},
+										{30,  60},
+										{40,  50},
+										{100, 8},
+										{200, 7},
+										{300, 6},
+										{400, 5}};
 	
 	Team team = Team(id, sport, nullptr);
 };
@@ -173,7 +177,7 @@ TEST_F(EmptyTeamFixture, TeamStengthMeasure)
 	for (const auto& pair : vec3)
 	{
 		i++;
-		if(i==9)
+		if (i == 9)
 		{
 			i = 0;
 		}
@@ -189,9 +193,9 @@ TEST_F(EmptyTeamFixture, TeamStengthMeasure)
 	for (const auto& pair : vec4)
 	{
 		i++;
-		if(i==12)
+		if (i == 12)
 		{
-			i=0;
+			i = 0;
 		}
 		EXPECT_EQ(team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
 	}
@@ -277,11 +281,115 @@ TEST_F(TeamWithContestantsFixture, RemoveContestant_NonExistent)
 	EXPECT_EQ(team.remove_contestant(maxId + 1), FAILURE);
 }
 
+TEST_F(EmptyTeamFixture, AddContestant_Strength)
+{
+	int counter = 0;
+	std::vector<Pair<int, int>> contestantsEntered;
+	std::vector<Pair<int, int>> first;
+	std::vector<Pair<int, int>> second;
+	std::vector<Pair<int, int>> third;
+	std::vector<Pair<int, int>> thirds[3] = {third, first, second};
+	int max[3] = {0, 0, 0};
+	for (const auto& pair : contestantData)
+	{
+		team.add_contestant(new Contestant(pair.get_first(), nullptr, Sport::SWIMMING, pair.get_second()));
+		contestantsEntered.push_back(pair);
+		counter++;
+//		std::sort(contestantsEntered.begin(), contestantsEntered.end(), [](Pair<int, int> p1, Pair<int, int> p2)
+//		{return p1 < p2;})
+		std::sort(contestantsEntered.begin(), contestantsEntered.end());
+		
+		
+		int strength = 0;
+		if (counter % 3 == 0)
+		{
+			for (int i = 0; i < 3; ++i)
+			{
+				for (int j = 0; j < contestantsEntered.size() / 3; ++j)
+				{
+					thirds[i].push_back(contestantsEntered[i * (contestantsEntered.size() / 3) + j]);
+				}
+			}
+			for (int i = 0; i < 3 && i < contestantsEntered.size(); ++i)
+			{
+				max[i] = std::max_element(thirds[i].begin(), thirds[i].end(), [](const Pair<int, int>& p1,
+																				 const Pair<int, int>& p2) { return p1.get_second() < p2.get_second(); })->get_second();
+			}
+			strength = max[0] + max[1] + max[2];
+		}
+		ASSERT_EQ(team.get_team_strength(), strength);
+	}
+}
 
+TEST_F(TeamWithContestantsFixture, RemoveContestant_Strength)
+{
+	int counter = team.get_size();
+	std::vector<Contestant> contestantsRemoved = team.all_contestants_to_vec();
+	std::vector<Pair<int, int>> first;
+	std::vector<Pair<int, int>> second;
+	std::vector<Pair<int, int>> third;
+	std::vector<std::vector<Pair<int, int>>> thirds = {third, first, second};
+	int max[3] = {0, 0, 0};
+	for (const auto& pair : contestantData)
+	{
+		team.remove_contestant(pair.get_first());
+		contestantsRemoved.erase(
+				std::remove_if(contestantsRemoved.begin(), contestantsRemoved.end(), [pair](Contestant contestant) {
+					return contestant.id == pair.get_first();
+				}), contestantsRemoved.end());;
+		counter--;
+//		std::sort(contestantsRemoved.begin(), contestantsRemoved.end(), [](Pair<int, int> p1, Pair<int, int> p2)
+//		{return p1 < p2;})
+		std::sort(contestantsRemoved.begin(), contestantsRemoved.end(), [](Contestant c1, Contestant c2) {
+			return c1.id < c2.id;
+		});
+		
+		
+		int strength = 0;
+		if (counter % 3 == 0)
+		{
+//			for (int i = 0; i < 3; ++i)
+//			{
+//				for (int j = 0; j < contestantsRemoved.size() / 3; ++j)
+//				{
+//					Contestant contestant = contestantsRemoved[i * (contestantsRemoved.size() / 3) + j];
+//					thirds[i].push_back({contestant.id, contestant.get_strength()});
+//				}
+//			}
+			thirds = divideContestants(contestantsRemoved);
 
+			for (int i = 0; i < 3 && i < contestantsRemoved.size(); ++i)
+			{
+				max[i] = std::max_element(thirds[i].begin(), thirds[i].end(), [](const Pair<int, int>& p1,
+																				 const Pair<int, int>& p2) { return p1.get_second() < p2.get_second(); })->get_second();
+			}
+			strength = max[0] + max[1] + max[2];
+		}
+		ASSERT_EQ(team.get_team_strength(), strength);
+	}
+}
 
-
-
+std::vector<std::vector<Pair<int, int>>> divideContestants(const std::vector<Contestant>& contestants)
+{
+	std::vector<std::vector<Contestant>> dividedGroups(3);
+	std::vector<std::vector<Pair<int, int>>> res(3);
+	int groupSize = contestants.size() / 3;
+	
+	// Copy contestants to a temporary vector to allow shuffling
+	std::vector<Contestant> tempContestants = contestants;
+	
+	// Divide contestants into three groups
+	for (int i = 0; i < 3; ++i)
+	{
+		dividedGroups[i].reserve(groupSize);
+		std::copy_n(tempContestants.begin() + i * groupSize, groupSize, std::back_inserter(dividedGroups[i]));
+		for(auto contestant : dividedGroups[i])
+		{
+			res[i].push_back({contestant.id, contestant.get_strength()});
+		}
+	}
+	return res;
+}
 
 
 
