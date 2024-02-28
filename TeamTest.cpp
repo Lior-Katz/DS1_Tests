@@ -87,7 +87,7 @@ protected:
 										{300, 6},
 										{400, 5}};
 	
-	Team team = Team(id, sport, nullptr);
+	Team emptyTeam = Team(id, sport, nullptr);
 };
 
 class TeamWithContestantsFixture : public ::testing::Test
@@ -97,28 +97,80 @@ protected:
 	
 	Sport sport = Sport::SWIMMING;
 	
+	Country* country = new Country(1, 1000);
 	/**
 	 * vector of (id, strength)
 	 */
 	std::vector<Pair<int, int>> contestantData = {{3,  5},
 												  {4,  70},
-												  {1,  70},
-												  {7,  70},
-												  {6,  70},
+												  {1,  10},
+												  {7,  4},
+												  {6,  60},
 												  {10, 50},
-												  {8,  70},
+												  {8,  80},
 												  {30, 13},
 												  {2,  70},
 												  {5,  70},
 												  {11, 30}};
 	
-	Team team = Team(id, sport, nullptr);
+	Team team = Team(id, sport, country);
 	
 	void SetUp() override
 	{
 		for (const auto& pair : contestantData)
 		{
 			team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second()));
+		}
+	}
+};
+
+class TeamUniteTest : public TeamWithContestantsFixture
+{
+protected:
+	Team team2 = Team(id + 1, sport, country);
+	
+	Team teamWithDuplicate = Team(id + 2, sport, country);
+	
+	Team teamWithDifferentCountry = Team(id + 3, sport, new Country(2, 200));
+	Team teamWithDifferenSport = Team(id + 4, Sport((static_cast<int>(sport) + 1 ) % 5), new Country(3, 300));
+	
+	std::vector<Pair<int, int>> team2ContestantData = {{12, 20},
+													   {13, 30},
+													   {14, 40},
+													   {15, 50},
+													   {16, 60},
+													   {17, 70},
+													   {18, 80},
+													   {19, 90},
+													   {20, 100},
+													   {21, 110},
+													   {22, 120},
+													   {23, 130},
+													   {24, 140}};
+	std::vector<Pair<int, int>> teamWithDuplicateContestantData = {{3,  5},
+																   {4,  70},
+																   {20, 60},
+																   {21, 50},
+																   {25, 70},
+																   {26, 80},
+																   {27, 90},
+																   {28, 100},
+																   {29, 110},
+																   {30, 120}};
+	
+	void SetUp() override
+	{
+		TeamWithContestantsFixture::SetUp(); // Call base fixture's SetUp
+		
+		for (const auto& pair : team2ContestantData)
+		{
+			team2.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second()));
+		}
+		
+		
+		for (const auto& pair : teamWithDuplicateContestantData)
+		{
+			teamWithDuplicate.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second()));
 		}
 	}
 };
@@ -137,10 +189,10 @@ TEST_F(EmptyTeamFixture, AddContestant)
 {
 	for (const auto& pair : contestantData)
 	{
-		auto allContestantsBefore = team.all_contestants_to_vec();
-		EXPECT_EQ(team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
-		int groupSize = team.get_size() / 3;
-		for (const auto& group : team.contestantTrees)
+		auto allContestantsBefore = emptyTeam.all_contestants_to_vec();
+		EXPECT_EQ(emptyTeam.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
+		int groupSize = emptyTeam.get_size() / 3;
+		for (const auto& group : emptyTeam.contestantTrees)
 		{
 			ASSERT_TRUE(group.is_valid());
 			ASSERT_LE(group.get_size(), groupSize + 1);
@@ -148,8 +200,8 @@ TEST_F(EmptyTeamFixture, AddContestant)
 		}
 		for (int i = 0; i < SUB_GROUPS - 1; ++i)
 		{
-			auto res1 = team.contestantTrees[i].get_max();
-			auto res2 = team.contestantTrees[i + 1].get_min();
+			auto res1 = emptyTeam.contestantTrees[i].get_max();
+			auto res2 = emptyTeam.contestantTrees[i + 1].get_min();
 			if (res1.status() == SUCCESS && res2.status() == SUCCESS)
 			{
 				EXPECT_LT(res1.ans()->id, res2.ans()->id);
@@ -159,7 +211,7 @@ TEST_F(EmptyTeamFixture, AddContestant)
 		for (auto contestant : allContestantsBefore)
 		{
 			int counter = 0;
-			for (const auto& group : team.contestantTrees)
+			for (const auto& group : emptyTeam.contestantTrees)
 			{
 				if (group.find(contestant.id).status() == SUCCESS)
 				{
@@ -181,14 +233,14 @@ TEST_F(EmptyTeamFixture, TeamStengthMeasure)
 		{
 			i = 0;
 		}
-		EXPECT_EQ(team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
+		EXPECT_EQ(emptyTeam.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
 	}
-	output_t<int> output = team.get_team_strength();
+	output_t<int> output = emptyTeam.get_team_strength();
 	EXPECT_EQ(output.status(), SUCCESS);
 	EXPECT_EQ(27, output.ans());
 	for (const auto& pair : vec3)
 	{
-		EXPECT_EQ(team.remove_contestant(pair.get_first()), SUCCESS);
+		EXPECT_EQ(emptyTeam.remove_contestant(pair.get_first()), SUCCESS);
 	}
 	for (const auto& pair : vec4)
 	{
@@ -197,9 +249,9 @@ TEST_F(EmptyTeamFixture, TeamStengthMeasure)
 		{
 			i = 0;
 		}
-		EXPECT_EQ(team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
+		EXPECT_EQ(emptyTeam.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
 	}
-	output_t<int> output2 = team.get_team_strength();
+	output_t<int> output2 = emptyTeam.get_team_strength();
 	EXPECT_EQ(output2.status(), SUCCESS);
 	EXPECT_EQ(888, output2.ans());
 }
@@ -208,10 +260,10 @@ TEST_F(EmptyTeamFixture, AuterityMeasure)
 {
 	for (const auto& pair : vec2)
 	{
-		auto allContestantsBefore = team.all_contestants_to_vec();
-		EXPECT_EQ(team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
+		auto allContestantsBefore = emptyTeam.all_contestants_to_vec();
+		EXPECT_EQ(emptyTeam.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
 	}
-	output_t<int> output = team.austerity_measures();
+	output_t<int> output = emptyTeam.austerity_measures();
 	EXPECT_EQ(output.status(), SUCCESS);
 	EXPECT_EQ(32, output.ans());
 }
@@ -270,7 +322,7 @@ TEST_F(EmptyTeamFixture, RemoveContestant_NonExistent_EmptyTeam)
 {
 	for (const auto& pair : contestantData)
 	{
-		EXPECT_EQ(team.remove_contestant(pair.get_first()), FAILURE);
+		EXPECT_EQ(emptyTeam.remove_contestant(pair.get_first()), FAILURE);
 	}
 }
 
@@ -292,11 +344,9 @@ TEST_F(EmptyTeamFixture, AddContestant_Strength)
 	int max[3] = {0, 0, 0};
 	for (const auto& pair : contestantData)
 	{
-		team.add_contestant(new Contestant(pair.get_first(), nullptr, Sport::SWIMMING, pair.get_second()));
+		emptyTeam.add_contestant(new Contestant(pair.get_first(), nullptr, Sport::SWIMMING, pair.get_second()));
 		contestantsEntered.push_back(pair);
 		counter++;
-//		std::sort(contestantsEntered.begin(), contestantsEntered.end(), [](Pair<int, int> p1, Pair<int, int> p2)
-//		{return p1 < p2;})
 		std::sort(contestantsEntered.begin(), contestantsEntered.end());
 		
 		
@@ -317,7 +367,7 @@ TEST_F(EmptyTeamFixture, AddContestant_Strength)
 			}
 			strength = max[0] + max[1] + max[2];
 		}
-		ASSERT_EQ(team.get_team_strength(), strength);
+		ASSERT_EQ(emptyTeam.get_team_strength(), strength);
 	}
 }
 
@@ -338,8 +388,6 @@ TEST_F(TeamWithContestantsFixture, RemoveContestant_Strength)
 					return contestant.id == pair.get_first();
 				}), contestantsRemoved.end());;
 		counter--;
-//		std::sort(contestantsRemoved.begin(), contestantsRemoved.end(), [](Pair<int, int> p1, Pair<int, int> p2)
-//		{return p1 < p2;})
 		std::sort(contestantsRemoved.begin(), contestantsRemoved.end(), [](Contestant c1, Contestant c2) {
 			return c1.id < c2.id;
 		});
@@ -348,16 +396,9 @@ TEST_F(TeamWithContestantsFixture, RemoveContestant_Strength)
 		int strength = 0;
 		if (counter % 3 == 0)
 		{
-//			for (int i = 0; i < 3; ++i)
-//			{
-//				for (int j = 0; j < contestantsRemoved.size() / 3; ++j)
-//				{
-//					Contestant contestant = contestantsRemoved[i * (contestantsRemoved.size() / 3) + j];
-//					thirds[i].push_back({contestant.id, contestant.get_strength()});
-//				}
-//			}
+			
 			thirds = divideContestants(contestantsRemoved);
-
+			
 			for (int i = 0; i < 3 && i < contestantsRemoved.size(); ++i)
 			{
 				max[i] = std::max_element(thirds[i].begin(), thirds[i].end(), [](const Pair<int, int>& p1,
@@ -367,6 +408,32 @@ TEST_F(TeamWithContestantsFixture, RemoveContestant_Strength)
 		}
 		ASSERT_EQ(team.get_team_strength(), strength);
 	}
+}
+
+
+TEST_F(TeamUniteTest, SameCountryAndSport)
+{
+	EXPECT_EQ(SUCCESS, team.unite(&team2));
+}
+
+TEST_F(TeamUniteTest, DifferentCountries)
+{
+	EXPECT_EQ(FAILURE, team.unite(&teamWithDifferentCountry));
+}
+
+TEST_F(TeamUniteTest, DifferentSports)
+{
+	EXPECT_EQ(FAILURE, team.unite(&teamWithDifferenSport));
+}
+
+TEST_F(TeamUniteTest, OverlappingPlayers)
+{
+	EXPECT_EQ(SUCCESS, team.unite(&teamWithDuplicate));
+}
+
+TEST_F(TeamUniteTest, NoOverlappingPlayers)
+{
+	EXPECT_EQ(SUCCESS, team.unite(&team2));
 }
 
 std::vector<std::vector<Pair<int, int>>> divideContestants(const std::vector<Contestant>& contestants)
@@ -383,7 +450,7 @@ std::vector<std::vector<Pair<int, int>>> divideContestants(const std::vector<Con
 	{
 		dividedGroups[i].reserve(groupSize);
 		std::copy_n(tempContestants.begin() + i * groupSize, groupSize, std::back_inserter(dividedGroups[i]));
-		for(auto contestant : dividedGroups[i])
+		for (auto contestant : dividedGroups[i])
 		{
 			res[i].push_back({contestant.id, contestant.get_strength()});
 		}
