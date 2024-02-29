@@ -379,9 +379,9 @@ TEST_F(TeamWithContestantsFixture, RemoveContestant_Strength)
 	std::vector<Pair<int, int>> second;
 	std::vector<Pair<int, int>> third;
 	std::vector<std::vector<Pair<int, int>>> thirds = {third, first, second};
-	int max[3] = {0, 0, 0};
 	for (const auto& pair : contestantData)
 	{
+		int max[3] = {0, 0, 0};
 		team.remove_contestant(pair.get_first());
 		contestantsRemoved.erase(
 				std::remove_if(contestantsRemoved.begin(), contestantsRemoved.end(), [pair](Contestant contestant) {
