@@ -88,6 +88,8 @@ protected:
 										{400, 5}};
 	
 	Team emptyTeam = Team(id, sport, nullptr);
+	Team team = Team(id, sport, nullptr);
+	Team team2 = Team(id, sport, nullptr);
 };
 
 class TeamWithContestantsFixture : public ::testing::Test
@@ -456,6 +458,38 @@ std::vector<std::vector<Pair<int, int>>> divideContestants(const std::vector<Con
 		}
 	}
 	return res;
+}
+
+TEST_F(EmptyTeamFixture, GetContestantStrength)
+{
+	for (const auto& pair : vec)
+	{
+		EXPECT_EQ(team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
+	}
+	for (const auto& pair : vec2)
+	{
+		EXPECT_EQ(team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
+	}
+	for (const auto& pair : vec)
+	{
+		EXPECT_EQ(emptyTeam.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())),
+				  SUCCESS);
+	}
+	for (const auto& pair : vec2)
+	{
+		EXPECT_EQ(team2.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
+	}
+	
+	emptyTeam.unite(&team2);
+	auto vec1 = emptyTeam.all_contestants_to_vec();
+	auto vec2 = team.all_contestants_to_vec();
+	assert(vec1.size() == vec2.size());
+	for (int i = 0; i < vec1.size(); ++i)
+	{
+		EXPECT_EQ(vec1[i].id, vec2[i].id);
+		EXPECT_EQ(vec1[i].get_strength(), vec2[i].get_strength());
+	}
+	
 }
 
 
