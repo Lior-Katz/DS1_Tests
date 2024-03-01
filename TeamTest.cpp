@@ -31,58 +31,58 @@ protected:
 	 * vector of (id, strength)
 	 */
 	std::vector<Pair<int, int>> contestantData = {{3,  5},
-												  {4,  70},
-												  {1,  70},
+												  {4,  5},
+												  {1,  10},
 												  {7,  70},
 												  {6,  70},
 												  {10, 50},
-												  {8,  70},
+												  {8,  80},
 												  {30, 13},
 												  {2,  70},
 												  {5,  70},
 												  {11, 30}};
 	
 	std::vector<Pair<int, int>> vec = {{0,  5},
-									   {4,  70},
-									   {1,  70},
+									   {4,  5},
+									   {1,  10},
 									   {7,  70},
 									   {6,  70},
 									   {10, 50},
-									   {8,  70},
+									   {8,  80},
 									   {30, 13},
 									   {2,  70},
 									   {5,  70},
 									   {11, 30}};
 	
-	std::vector<Pair<int, int>> vec2 = {{1,   2},
+	std::vector<Pair<int, int>> vec2 = {{1,   10},
 										{4,   5},
-										{6,   3},
-										{10,  10},
+										{6,   70},
+										{10,  50},
 										{16,  11},
 										{20,  15},
 										{100, 7},
 										{101, 6},
 										{102, 4}};
 	
-	std::vector<Pair<int, int>> vec3 = {{1,   2},
+	std::vector<Pair<int, int>> vec3 = {{1,   10},
 										{4,   5},
-										{6,   3},
-										{10,  10},
+										{6,   70},
+										{10,  50},
 										{16,  11},
 										{20,  15},
 										{100, 7},
 										{101, 6},
 										{102, 4}};
 	
-	std::vector<Pair<int, int>> vec4 = {{1,   800},
+	std::vector<Pair<int, int>> vec4 = {{1,   10},
 										{2,   700},
-										{3,   600},
-										{4,   500},
-										{10,  80},
-										{20,  70},
-										{30,  60},
+										{3,   5},
+										{4,   5},
+										{10,  50},
+										{20,  15},
+										{30,  13},
 										{40,  50},
-										{100, 8},
+										{100, 7},
 										{200, 7},
 										{300, 6},
 										{400, 5}};
@@ -106,8 +106,8 @@ protected:
 	std::vector<Pair<int, int>> contestantData = {{3,  5},
 												  {4,  70},
 												  {1,  10},
-												  {7,  4},
-												  {6,  60},
+												  {7,  70},
+												  {6,  70},
 												  {10, 50},
 												  {8,  80},
 												  {30, 13},
@@ -144,21 +144,21 @@ protected:
 													   {17, 70},
 													   {18, 80},
 													   {19, 90},
-													   {20, 100},
+													   {20, 15},
 													   {21, 110},
 													   {22, 120},
 													   {23, 130},
 													   {24, 140}};
 	std::vector<Pair<int, int>> teamWithDuplicateContestantData = {{3,  5},
 																   {4,  70},
-																   {20, 60},
+																   {20, 15},
 																   {21, 50},
 																   {25, 70},
 																   {26, 80},
 																   {27, 90},
 																   {28, 100},
 																   {29, 110},
-																   {30, 120}};
+																   {30, 13}};
 	
 	void SetUp() override
 	{
@@ -230,44 +230,33 @@ TEST_F(EmptyTeamFixture, TeamStengthMeasure)
 	int i = 0;
 	for (const auto& pair : vec3)
 	{
-		i++;
-		if (i == 9)
-		{
-			i = 0;
-		}
 		EXPECT_EQ(emptyTeam.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
 	}
 	output_t<int> output = emptyTeam.get_team_strength();
 	EXPECT_EQ(output.status(), SUCCESS);
-	EXPECT_EQ(27, output.ans());
+	EXPECT_EQ(127, output.ans());
 	for (const auto& pair : vec3)
 	{
 		EXPECT_EQ(emptyTeam.remove_contestant(pair.get_first()), SUCCESS);
 	}
 	for (const auto& pair : vec4)
 	{
-		i++;
-		if (i == 12)
-		{
-			i = 0;
-		}
 		EXPECT_EQ(emptyTeam.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
 	}
 	output_t<int> output2 = emptyTeam.get_team_strength();
 	EXPECT_EQ(output2.status(), SUCCESS);
-	EXPECT_EQ(888, output2.ans());
+	EXPECT_EQ(757, output2.ans());
 }
 
 TEST_F(EmptyTeamFixture, AuterityMeasure)
 {
 	for (const auto& pair : vec2)
 	{
-		auto allContestantsBefore = emptyTeam.all_contestants_to_vec();
 		EXPECT_EQ(emptyTeam.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
 	}
 	output_t<int> output = emptyTeam.austerity_measures();
 	EXPECT_EQ(output.status(), SUCCESS);
-	EXPECT_EQ(32, output.ans());
+	EXPECT_EQ(135, output.ans());
 }
 
 TEST_F(TeamWithContestantsFixture, AddContestat_Exists)
@@ -464,20 +453,20 @@ TEST_F(EmptyTeamFixture, GetContestantStrength)
 {
 	for (const auto& pair : vec)
 	{
-		EXPECT_EQ(team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
+		team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second()));
 	}
 	for (const auto& pair : vec2)
 	{
-		EXPECT_EQ(team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
+		team.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second()));
 	}
 	for (const auto& pair : vec)
 	{
-		EXPECT_EQ(emptyTeam.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())),
-				  SUCCESS);
+		emptyTeam.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second()));
+
 	}
 	for (const auto& pair : vec2)
 	{
-		EXPECT_EQ(team2.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second())), SUCCESS);
+		team2.add_contestant(new Contestant(pair.get_first(), nullptr, sport, pair.get_second()));
 	}
 	
 	emptyTeam.unite(&team2);

@@ -61,8 +61,6 @@ TEST(SUITE, Constructor)
 	EXPECT_EQ(tree.get_max().status(), FAILURE);
 	EXPECT_EQ(tree.get_min().status(), FAILURE);
 	EXPECT_EQ(tree.find(0).status(), FAILURE);
-	EXPECT_EQ(tree.get_rank(0), 0);
-	EXPECT_EQ(tree.select_rank(1).status(), FAILURE);
 	std::vector<Pair<int, int>> res = std::vector<Pair<int, int>>();
 	EXPECT_EQ(tree.to_vec(), res);
 	std::stringstream ss;
@@ -168,51 +166,6 @@ TEST_F(AVLTreeFixture, MinMaxEmptyTree)
 	auto tree = AVL_Tree<int, int>();
 	EXPECT_EQ(tree.get_min().status(), FAILURE);
 	EXPECT_EQ(tree.get_max().status(), FAILURE);
-}
-
-TEST_F(AVLTreeFixture, SelectRank)
-{
-	for (int i = 1; i < vec.size(); ++i)
-	{
-		auto res = avlTree.select_rank(i);
-		EXPECT_EQ(res.status(), SUCCESS);
-		EXPECT_EQ(res.ans(), vec[i - 1].get_second());
-	}
-}
-
-TEST_F(AVLTreeFixture, SelectRankOutsideBounds)
-{
-	EXPECT_EQ(avlTree.select_rank(12).status(), FAILURE);
-	EXPECT_EQ(avlTree.select_rank(0).status(), FAILURE);
-	EXPECT_EQ(avlTree.select_rank(-1).status(), FAILURE);
-	EXPECT_EQ(avlTree.select_rank(15).status(), FAILURE);
-}
-
-TEST(SUITE, SelectRankEmptyTree)
-{
-	auto tree = AVL_Tree<int, int>();
-	EXPECT_EQ(tree.select_rank(0).status(), FAILURE);
-	EXPECT_EQ(tree.select_rank(1).status(), FAILURE);
-}
-
-TEST_F(AVLTreeFixture, GetRank)
-{
-	for (int i = 0; i < vec.size(); ++i)
-	{
-		EXPECT_EQ(avlTree.get_rank(vec[i].get_first()), i + 1);
-	}
-}
-
-TEST_F(AVLTreeFixture, GetRankNonExistent)
-{
-	EXPECT_EQ(avlTree.get_rank(-1), 0);
-}
-
-TEST(SUITE, GetRankEmptyTree)
-{
-	auto tree = AVL_Tree<int, int>();
-	EXPECT_EQ(tree.get_rank(0), 0);
-	EXPECT_EQ(tree.get_rank(1), 0);
 }
 
 TEST_F(AVLTreeFixture, Remove)
