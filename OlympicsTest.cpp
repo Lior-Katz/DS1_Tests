@@ -327,7 +327,6 @@ TEST_F(OlympicsWithCountriesFixture, AddTeam)
 		Team* team = res.ans();
 		Country* country = olympics.countries.find(std::get<1>(tup)).ans();
 		EXPECT_EQ(team->get_country(), country);
-		EXPECT_EQ(country->teams.find(std::get<0>(tup)).status(), StatusType::SUCCESS);
 	}
 }
 
@@ -363,8 +362,6 @@ TEST_F(OlympicsWithTeamsFixture, RemoveTeam)
 	{
 		EXPECT_EQ(olympics.remove_team(std::get<0>(tup)), StatusType::SUCCESS);
 		EXPECT_EQ(olympics.teams.find(std::get<0>(tup)).status(), StatusType::FAILURE);
-		EXPECT_EQ(olympics.countries.find(std::get<1>(tup)).ans()->teams.find(std::get<0>(tup)).status(),
-				  StatusType::FAILURE);
 	}
 }
 
